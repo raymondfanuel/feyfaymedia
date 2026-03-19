@@ -94,9 +94,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare("INSERT IGNORE INTO post_tags (post_id, tag_id) VALUES (?, ?)")->execute([$post_id, $tag_id]);
             }
         }
+        toast_add_flash('success', 'Post created successfully.');
         redirect(base_url('admin/posts.php'));
     }
     }
+}
+
+foreach ($errors as $e) {
+    toast_add('error', $e);
 }
 
 $load_tinymce = true;
@@ -105,7 +110,6 @@ require_once __DIR__ . '/includes/header.php';
 
 <div class="admin-content">
     <h1>Add New Post</h1>
-    <?php foreach ($errors as $e): ?><div class="alert alert-error"><?php echo e($e); ?></div><?php endforeach; ?>
     <form method="post" enctype="multipart/form-data" class="admin-form post-form">
         <?php echo csrf_field(); ?>
         <div class="form-group">

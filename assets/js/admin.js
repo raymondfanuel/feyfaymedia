@@ -5,6 +5,66 @@
 (function() {
     'use strict';
 
+    if (window.FeyFayToast) return;
+
+    function ensureContainer() {
+        var container = document.getElementById('toastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container';
+            container.setAttribute('aria-live', 'polite');
+            container.setAttribute('aria-atomic', 'true');
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
+    function normalizeType(type) {
+        var allowed = ['success', 'error', 'info', 'warning'];
+        return allowed.indexOf(type) !== -1 ? type : 'info';
+    }
+
+    window.FeyFayToast = {
+        show: function(message, type, timeoutMs) {
+            if (!message) return;
+            var container = ensureContainer();
+            var toast = document.createElement('div');
+            var toastType = normalizeType(String(type || 'info').toLowerCase());
+            toast.className = 'toast toast-' + toastType;
+            toast.setAttribute('role', 'status');
+
+            var text = document.createElement('div');
+            text.className = 'toast-message';
+            text.textContent = String(message);
+            toast.appendChild(text);
+
+            var closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'toast-close';
+            closeBtn.setAttribute('aria-label', 'Close notification');
+            closeBtn.textContent = 'x';
+            closeBtn.addEventListener('click', function() {
+                toast.classList.remove('is-visible');
+                setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 160);
+            });
+            toast.appendChild(closeBtn);
+
+            container.appendChild(toast);
+            requestAnimationFrame(function() { toast.classList.add('is-visible'); });
+
+            var delay = typeof timeoutMs === 'number' ? timeoutMs : 3800;
+            setTimeout(function() {
+                toast.classList.remove('is-visible');
+                setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 180);
+            }, delay);
+        }
+    };
+})();
+
+(function() {
+    'use strict';
+
     // Admin navbar toggle (mobile/tablet)
     var adminNavToggle = document.getElementById('adminNavToggle');
     var adminNav = document.getElementById('adminNav');

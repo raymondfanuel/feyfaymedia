@@ -32,5 +32,6 @@
     });
     </script>
     <?php endif; ?>
+    <?php echo render_toasts_script(); ?>
 </body>
 </html>

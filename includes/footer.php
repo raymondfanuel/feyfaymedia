@@ -134,5 +134,6 @@ $sticky_stream_url = $sticky_radio_enabled ? trim($settings['stream_url']) : '';
 </script>
 <?php endif; ?>
 <script src="<?php echo base_url('assets/js/main.js'); ?>"></script>
+<?php echo render_toasts_script(); ?>
 </body>
 </html>

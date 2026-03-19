@@ -32,13 +32,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings = get_settings($pdo, true);
 }
 
+if ($success !== '') toast_add('success', $success);
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="admin-content">
     <h1>Live Radio Settings</h1>
     <p class="admin-lead">Configure your online radio stream. Visitors can listen from the <a href="<?php echo base_url('live-radio.php'); ?>" target="_blank">Live Radio</a> page.</p>
-    <?php if ($success): ?><div class="alert alert-success"><?php echo e($success); ?></div><?php endif; ?>
 
     <form method="post" class="admin-form radio-settings-form">
         <?php echo csrf_field(); ?>

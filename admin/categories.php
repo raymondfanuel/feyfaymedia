@@ -54,13 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_category']) &&
     }
 }
 
+if ($error !== '') toast_add('error', $error);
+if ($success !== '') toast_add('success', $success);
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="admin-content">
     <h1>Categories</h1>
-    <?php if ($error): ?><div class="alert alert-error"><?php echo e($error); ?></div><?php endif; ?>
-    <?php if ($success): ?><div class="alert alert-success"><?php echo e($success); ?></div><?php endif; ?>
     <?php if (can_manage_categories()): ?>
     <div class="categories-add">
         <h2>Add Category</h2>

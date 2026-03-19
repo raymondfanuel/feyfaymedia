@@ -22,6 +22,7 @@ if (!$id) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
     $pdo->prepare("DELETE FROM post_tags WHERE post_id = ?")->execute([$id]);
     $pdo->prepare("DELETE FROM posts WHERE id = ?")->execute([$id]);
+    toast_add_flash('success', 'Post deleted.');
     header('Location: ' . base_url('admin/posts.php'));
     exit;
 }

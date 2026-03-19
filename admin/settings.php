@@ -36,12 +36,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings = get_settings($pdo, true);
 }
 
+if ($success !== '') toast_add('success', $success);
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="admin-content">
     <h1>Settings</h1>
-    <?php if ($success): ?><div class="alert alert-success"><?php echo e($success); ?></div><?php endif; ?>
     <form method="post" class="admin-form settings-form">
         <?php echo csrf_field(); ?>
         <h2>Site</h2>

@@ -129,7 +129,6 @@ require_once __DIR__ . '/includes/header.php';
             <a href="https://www.linkedin.com/shareArticle?mini=true&url=<?php echo rawurlencode($share_url); ?>&title=<?php echo $share_title; ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-linkedin" aria-label="Share on LinkedIn">LinkedIn</a>
             <a href="https://wa.me/?text=<?php echo $share_title; ?>%20<?php echo rawurlencode($share_url); ?>" target="_blank" rel="noopener noreferrer" class="share-btn share-whatsapp" aria-label="Share on WhatsApp">WhatsApp</a>
         </div>
-        <p id="commentMessage" class="comment-form-msg" role="status" aria-live="polite"></p>
         <form class="comment-form" id="commentForm" action="<?php echo base_url('ajax/comment.php'); ?>" method="post">
             <input type="hidden" name="post_id" value="<?php echo (int)$post['id']; ?>">
             <div class="form-row">
@@ -169,12 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {
             xhr.open('POST', form.action);
             xhr.onload = function() {
                 var res = JSON.parse(xhr.responseText || '{}');
-                var msg = document.getElementById('commentMessage');
-                if (msg) {
-                    msg.textContent = res.message || (res.success ? 'Thank you. Your comment will appear after approval.' : 'Sorry, something went wrong.');
-                    msg.className = 'comment-form-msg ' + (res.success ? 'success' : 'error');
-                } else {
-                    alert(res.message || (res.success ? 'Comment submitted. It will appear after approval.' : 'Error submitting comment.'));
+                var text = res.message || (res.success ? 'Thank you. Your comment will appear after approval.' : 'Sorry, something went wrong.');
+                if (window.FeyFayToast && typeof window.FeyFayToast.show === 'function') {
+                    window.FeyFayToast.show(text, res.success ? 'success' : 'error');
                 }
                 if (res.success) form.reset();
             };

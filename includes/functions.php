@@ -89,6 +89,76 @@ function redirect($url, $code = 302) {
 }
 
 /**
+ * Toast notifications (current request + flash across redirects)
+ */
+function toast_add($type, $message, $flash = false) {
+    $message = trim((string)$message);
+    if ($message === '') return;
+
+    $type = strtolower(trim((string)$type));
+    $allowed = ['success', 'error', 'info', 'warning'];
+    if (!in_array($type, $allowed, true)) $type = 'info';
+
+    $toast = ['type' => $type, 'message' => $message];
+    if ($flash) {
+        if (!isset($_SESSION['toast_notifications']) || !is_array($_SESSION['toast_notifications'])) {
+            $_SESSION['toast_notifications'] = [];
+        }
+        $_SESSION['toast_notifications'][] = $toast;
+        return;
+    }
+
+    if (!isset($GLOBALS['toast_notifications']) || !is_array($GLOBALS['toast_notifications'])) {
+        $GLOBALS['toast_notifications'] = [];
+    }
+    $GLOBALS['toast_notifications'][] = $toast;
+}
+
+function toast_add_flash($type, $message) {
+    toast_add($type, $message, true);
+}
+
+function toast_consume_all() {
+    $toasts = [];
+
+    if (!empty($_SESSION['toast_notifications']) && is_array($_SESSION['toast_notifications'])) {
+        foreach ($_SESSION['toast_notifications'] as $t) {
+            if (!is_array($t)) continue;
+            $msg = trim((string)($t['message'] ?? ''));
+            if ($msg === '') continue;
+            $type = strtolower((string)($t['type'] ?? 'info'));
+            if (!in_array($type, ['success', 'error', 'info', 'warning'], true)) $type = 'info';
+            $toasts[] = ['type' => $type, 'message' => $msg];
+        }
+    }
+    unset($_SESSION['toast_notifications']);
+
+    if (!empty($GLOBALS['toast_notifications']) && is_array($GLOBALS['toast_notifications'])) {
+        foreach ($GLOBALS['toast_notifications'] as $t) {
+            if (!is_array($t)) continue;
+            $msg = trim((string)($t['message'] ?? ''));
+            if ($msg === '') continue;
+            $type = strtolower((string)($t['type'] ?? 'info'));
+            if (!in_array($type, ['success', 'error', 'info', 'warning'], true)) $type = 'info';
+            $toasts[] = ['type' => $type, 'message' => $msg];
+        }
+    }
+    $GLOBALS['toast_notifications'] = [];
+
+    return $toasts;
+}
+
+function render_toasts_script() {
+    $toasts = toast_consume_all();
+    if (empty($toasts)) return '';
+
+    $json = json_encode($toasts, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($json === false || $json === 'null') return '';
+
+    return '<script>(function(){var toasts=' . $json . ';function run(){if(!window.FeyFayToast||typeof window.FeyFayToast.show!=="function")return;toasts.forEach(function(t){window.FeyFayToast.show(t.message,t.type);});}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",run);}else{run();}})();</script>';
+}
+
+/**
  * Send email via SMTP (e.g. MailHog on localhost:1025). Returns true on success.
  */
 function send_mail_smtp($to, $subject, $body, $from_email, $from_name = '', $reply_to = '') {

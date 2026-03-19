@@ -40,6 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 $settings = get_settings($pdo);
 $site_name = e($settings['site_name'] ?? DEFAULT_SITE_NAME);
+if ($error !== '') {
+    toast_add('error', $error);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,7 +59,6 @@ $site_name = e($settings['site_name'] ?? DEFAULT_SITE_NAME);
     <div class="login-box">
         <h1><?php echo $site_name; ?></h1>
         <p class="login-subtitle">Admin Login</p>
-        <?php if ($error): ?><div class="alert alert-error"><?php echo e($error); ?></div><?php endif; ?>
         <form method="post" action="" class="admin-form">
             <?php echo csrf_field(); ?>
             <div class="form-group">
@@ -71,5 +73,7 @@ $site_name = e($settings['site_name'] ?? DEFAULT_SITE_NAME);
         </form>
         <p class="login-footer"><a href="<?php echo base_url(); ?>">&larr; Back to site</a></p>
     </div>
+    <script src="<?php echo base_url('assets/js/admin.js'); ?>"></script>
+    <?php echo render_toasts_script(); ?>
 </body>
 </html>

@@ -12,6 +12,7 @@ $admin_title = 'Staff';
 
 $error = '';
 $success = '';
+$current_user_id = (int)($_SESSION['user_id'] ?? 0);
 
 // Add user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user']) && csrf_verify()) {
@@ -63,16 +64,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user']) && csr
     }
 }
 
+// Delete user (admin only)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user']) && csrf_verify()) {
+    $uid = (int)($_POST['user_id'] ?? 0);
+    if ($uid <= 0) {
+        $error = 'Invalid user selected.';
+    } elseif ($uid === $current_user_id) {
+        $error = 'You cannot delete your own account.';
+    } else {
+        $stmt = $pdo->prepare("SELECT id, role FROM users WHERE id = ?");
+        $stmt->execute([$uid]);
+        $target = $stmt->fetch();
+
+        if (!$target) {
+            $error = 'User not found.';
+        } else {
+            if (($target['role'] ?? '') === 'admin') {
+                $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+                $admin_count = (int)$stmt->fetchColumn();
+                if ($admin_count <= 1) {
+                    $error = 'Cannot delete the last admin account.';
+                }
+            }
+
+            if ($error === '') {
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM posts WHERE author_id = ?");
+                $stmt->execute([$uid]);
+                $posts_count = (int)$stmt->fetchColumn();
+                if ($posts_count > 0) {
+                    $error = 'Cannot delete this user because they have posts. Reassign or delete their posts first.';
+                } else {
+                    $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$uid]);
+                    $success = 'User deleted.';
+                }
+            }
+        }
+    }
+}
+
 $stmt = $pdo->query("SELECT id, name, username, email, role, is_active, created_at FROM users ORDER BY role DESC, name ASC");
 $users = $stmt->fetchAll();
+
+if ($error !== '') toast_add('error', $error);
+if ($success !== '') toast_add('success', $success);
 
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="admin-content">
     <h1>Staff &amp; Admins</h1>
-    <?php if ($error): ?><div class="alert alert-error"><?php echo e($error); ?></div><?php endif; ?>
-    <?php if ($success): ?><div class="alert alert-success"><?php echo e($success); ?></div><?php endif; ?>
 
     <section class="users-add">
         <h2>Add user</h2>
@@ -134,6 +174,14 @@ require_once __DIR__ . '/includes/header.php';
                 <td><?php echo format_date($u['created_at']); ?></td>
                 <td>
                     <button type="button" class="btn btn-small" onclick="document.getElementById('edit-<?php echo $u['id']; ?>').style.display=document.getElementById('edit-<?php echo $u['id']; ?>').style.display==='none'?'block':'none'">Edit</button>
+                    <?php if ((int)$u['id'] !== $current_user_id): ?>
+                    <form method="post" class="form-inline" style="display:inline;" onsubmit="return confirm('Delete this user account?');">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="delete_user" value="1">
+                        <input type="hidden" name="user_id" value="<?php echo (int)$u['id']; ?>">
+                        <button type="submit" class="btn btn-small link-delete">Delete</button>
+                    </form>
+                    <?php endif; ?>
                 </td>
             </tr>
             <tr id="edit-<?php echo $u['id']; ?>" style="display:none;">

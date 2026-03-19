@@ -14,12 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
     if (isset($_POST['approve'])) {
         $cid = (int) $_POST['approve'];
         if ($cid) $pdo->prepare("UPDATE comments SET status = 'approved' WHERE id = ?")->execute([$cid]);
+        toast_add_flash('success', 'Comment approved.');
         header('Location: comments.php');
         exit;
     }
     if (isset($_POST['delete'])) {
         $cid = (int) $_POST['delete'];
         if ($cid) $pdo->prepare("DELETE FROM comments WHERE id = ?")->execute([$cid]);
+        toast_add_flash('success', 'Comment deleted.');
         header('Location: comments.php');
         exit;
     }
