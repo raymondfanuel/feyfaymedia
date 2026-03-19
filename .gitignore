@@ -1,0 +1,18 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Env files
+.env
+.env.*
+
+# Runtime uploads
+/assets/images/uploads/posts/*
+!/assets/images/uploads/posts/.gitkeep

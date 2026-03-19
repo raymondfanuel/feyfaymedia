@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Sitemap: replace example.com with your domain (e.g. https://yoursite.com/sitemap.php)
+Sitemap: https://example.com/sitemap.php
+
+# Disallow admin and ajax from indexing (optional; remove if you want admin crawlable)
+Disallow: /admin/
+Disallow: /ajax/
